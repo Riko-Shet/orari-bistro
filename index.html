@@ -227,6 +227,7 @@
     text-align: left;
     width: var(--th-name-w);
     padding-left: var(--td-name-pl);
+    background: #cc000018;
   }
 
   thead tr.dates-row th {
@@ -263,10 +264,28 @@
     font-size: var(--td-name-fs);
     padding-left: var(--td-name-pl);
     white-space: nowrap;
+    background: #cc000012;
   }
 
-  .today-col { background: var(--today-bg); }
-  .sunday-col { background: var(--sunday); }
+  .name-input {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    font-size: var(--td-name-fs);
+    width: 100%;
+    padding: 1px 2px;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .name-input:hover { border-color: var(--border); background: #00000008; }
+  .name-input:focus { border-color: var(--accent); background: #c0000010; }
+
+  .today-col { background: transparent; }
+  .sunday-col { background: transparent; }
 
   .dot {
     width: var(--dot-size); height: var(--dot-size);
@@ -315,10 +334,18 @@
 
 <header>
   <h1>Orari <span>Bistro 1473</span></h1>
-  <span class="year-badge">2026</span>
 </header>
 
 <div class="controls">
+  <select class="month-select" id="yearSelect">
+    <option value="2024">2024</option>
+    <option value="2025">2025</option>
+    <option value="2026" selected>2026</option>
+    <option value="2027">2027</option>
+    <option value="2028">2028</option>
+    <option value="2029">2029</option>
+    <option value="2030">2030</option>
+  </select>
   <select class="month-select" id="monthSelect">
     <option value="0">Gennaio</option>
     <option value="1">Febbraio</option>
@@ -369,6 +396,7 @@ const MONTH_NAMES = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
 
 let currentMonth = 3; // Aprile (0-indexed)
 let currentWeekIndex = 0;
+let currentYear = 2026;
 
 function getWeeksInMonth(year, month) {
   // Trova tutte le settimane (Lun–Dom) che toccano questo mese
@@ -414,7 +442,7 @@ function isToday(date) {
 }
 
 function render() {
-  const year = 2026;
+  const year = currentYear;
   const weeks = getWeeksInMonth(year, currentMonth);
 
   // Clamp index
@@ -437,8 +465,10 @@ function render() {
 
   week.forEach((d, i) => {
     const isSun = d.getDay() === 0;
+    const isSat = d.getDay() === 6;
     const cls = isSun ? 'sunday-col' : '';
-    html += `<th class="${cls}">${DAY_NAMES[d.getDay()]}</th>`;
+    const style = (isSat || isSun) ? ' style="color:var(--accent)"' : '';
+    html += `<th class="${cls}"${style}>${DAY_NAMES[d.getDay()]}</th>`;
   });
 
   html += `</tr><tr class="dates-row">
@@ -446,23 +476,25 @@ function render() {
 
   week.forEach((d, i) => {
     const isSun = d.getDay() === 0;
+    const isSat = d.getDay() === 6;
     const tod  = isToday(d);
     const cls  = tod ? 'today-col' : (isSun ? 'sunday-col' : '');
-    html += `<th class="${cls}">${d.getDate()}${tod ? ' ●' : ''}</th>`;
+    const style = (isSat || isSun) && !tod ? ' style="color:var(--accent)"' : '';
+    html += `<th class="${cls}"${style}>${d.getDate()}${tod ? ' ●' : ''}</th>`;
   });
-
-
 
   html += `</tr></thead><tbody>`;
 
-  PEOPLE.forEach(person => {
-    html += `<tr><td><span class="dot"></span>${person}</td>`;
+  PEOPLE.forEach((person, pi) => {
+    const storedName = loadName(pi) || person;
+    html += `<tr><td><span class="dot"></span><input type="text" class="name-input" data-pi="${pi}" value="${storedName.replace(/"/g,'&quot;')}"></td>`;
     week.forEach(d => {
       const key = toKey(d);
       const isSun = d.getDay() === 0;
+      const isSat = d.getDay() === 6;
       const tod  = isToday(d);
       const colCls = tod ? 'today-col' : (isSun ? 'sunday-col' : '');
-      const stored = loadCell(key, person);
+      const stored = loadCell(key, storedName);
       const dayData = DATA[key];
       const hardcoded = dayData ? dayData[person] : undefined;
       const raw = stored !== null ? stored : (hardcoded !== undefined ? hardcoded : '');
@@ -471,7 +503,7 @@ function render() {
       const inputCls = displayVal ? 'has-value' : 'is-off';
       html += `<td class="${colCls}">
         <textarea class="cell-input ${inputCls}"
-          data-key="${key}" data-person="${person}"
+          data-key="${key}" data-person="${storedName}"
           placeholder="—">${displayFormatted.replace(/"/g,'&quot;')}</textarea>
       </td>`;
     });
@@ -481,7 +513,7 @@ function render() {
   html += `</tbody></table>`;
   wrap.innerHTML = html;
 
-  // Attach input events
+  // Attach cell input events
   wrap.querySelectorAll('.cell-input').forEach(inp => {
     fitFont(inp);
     inp.addEventListener('input', function() {
@@ -491,6 +523,15 @@ function render() {
       this.classList.toggle('is-off', cleanVal.length === 0);
       fitFont(this);
       flashSaved();
+    });
+  });
+
+  // Attach name input events
+  wrap.querySelectorAll('.name-input').forEach(inp => {
+    inp.addEventListener('change', function() {
+      saveName(parseInt(this.dataset.pi), this.value.trim());
+      flashSaved();
+      render(); // re-render so data keys update
     });
   });
 
@@ -530,6 +571,18 @@ function flashSaved() {
   saveTimer = setTimeout(() => el.classList.remove('show'), 1500);
 }
 
+function saveName(pi, name) {
+  const store = getStore();
+  if (!store.__names__) store.__names__ = {};
+  store.__names__[pi] = name;
+  localStorage.setItem(LS_KEY, JSON.stringify(store));
+}
+
+function loadName(pi) {
+  const store = getStore();
+  return store.__names__ ? store.__names__[pi] || null : null;
+}
+
 // ── Auto font size fit ────────────────────────────────────────────────────────
 function fitFont(el) {
   // Get max font size from CSS variable (converted to px)
@@ -556,27 +609,31 @@ document.getElementById('monthSelect').addEventListener('change', function() {
   render();
 });
 
+document.getElementById('yearSelect').addEventListener('change', function() {
+  currentYear = parseInt(this.value);
+  currentWeekIndex = 0;
+  render();
+});
+
 document.getElementById('prevWeek').addEventListener('click', () => {
-  const weeks = getWeeksInMonth(2026, currentMonth);
+  const weeks = getWeeksInMonth(currentYear, currentMonth);
   if (currentWeekIndex > 0) {
     currentWeekIndex--;
   } else {
-    // vai al mese precedente
     if (currentMonth > 0) {
       currentMonth--;
       document.getElementById('monthSelect').value = currentMonth;
-      currentWeekIndex = getWeeksInMonth(2026, currentMonth).length - 1;
+      currentWeekIndex = getWeeksInMonth(currentYear, currentMonth).length - 1;
     }
   }
   render();
 });
 
 document.getElementById('nextWeek').addEventListener('click', () => {
-  const weeks = getWeeksInMonth(2026, currentMonth);
+  const weeks = getWeeksInMonth(currentYear, currentMonth);
   if (currentWeekIndex < weeks.length - 1) {
     currentWeekIndex++;
   } else {
-    // vai al mese successivo
     if (currentMonth < 11) {
       currentMonth++;
       document.getElementById('monthSelect').value = currentMonth;
@@ -587,11 +644,10 @@ document.getElementById('nextWeek').addEventListener('click', () => {
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-// Posiziona sulla settimana corrente se siamo in aprile 2026
 (function() {
   const today = new Date();
-  if (today.getFullYear() === 2026 && today.getMonth() === currentMonth) {
-    const weeks = getWeeksInMonth(2026, currentMonth);
+  if (today.getFullYear() === currentYear && today.getMonth() === currentMonth) {
+    const weeks = getWeeksInMonth(currentYear, currentMonth);
     weeks.forEach((w, i) => {
       if (today >= w[0] && today <= w[6]) currentWeekIndex = i;
     });
