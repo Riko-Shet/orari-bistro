@@ -449,15 +449,13 @@ function render() {
 
   // Attach input events
   wrap.querySelectorAll('.cell-input').forEach(inp => {
-    inp.style.height = 'auto';
-    inp.style.height = inp.scrollHeight + 'px';
+    fitFont(inp);
     inp.addEventListener('input', function() {
       const cleanVal = this.value.replace(/\n/g, '');
       saveCell(this.dataset.key, this.dataset.person, cleanVal);
       this.classList.toggle('has-value', cleanVal.length > 0);
       this.classList.toggle('is-off', cleanVal.length === 0);
-      this.style.height = 'auto';
-      this.style.height = this.scrollHeight + 'px';
+      fitFont(this);
       flashSaved();
     });
   });
@@ -496,6 +494,21 @@ function flashSaved() {
   el.classList.add('show');
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => el.classList.remove('show'), 1500);
+}
+
+// ── Auto font size fit ────────────────────────────────────────────────────────
+function fitFont(el) {
+  const maxSize = 0.65;
+  const minSize = 0.3;
+  let size = maxSize;
+  el.style.fontSize = size + 'rem';
+  while (el.scrollWidth > el.clientWidth + 2 && size > minSize) {
+    size = Math.round((size - 0.02) * 100) / 100;
+    el.style.fontSize = size + 'rem';
+  }
+  // recalculate height after font change
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
 }
 
 // ── Event listeners ───────────────────────────────────────────────────────────
