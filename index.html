@@ -328,12 +328,28 @@
     transition: opacity 0.3s;
   }
   .save-notice.show { opacity: 1; }
+
+  .hol-popup {
+    position: absolute;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    z-index: 999;
+  }
+  .hol-popup.show { opacity: 1; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Orari <span>Bistro 1473</span></h1>
+  <h1><em>Orari <span>Bistrò 1473</span></em></h1>
 </header>
 
 <div class="controls">
@@ -371,6 +387,8 @@
 
 <div class="table-wrap" id="tableWrap"></div>
 
+<div class="hol-popup" id="holPopup"></div>
+
 <script>
 // ── Dati originali dal file xlsx ──────────────────────────────────────────────
 const PEOPLE = ['Manu', 'Tudor', 'Elena', 'Marian', 'Igor'];
@@ -388,6 +406,71 @@ const DATA = {
   "2026-05-02": { Manu: '13.00-Ch.',Tudor:'13.00-23.00',Elena:'Ap./Ch.',Marian: 'Ap./Ch.',           Igor: null },
   "2026-05-03": { Manu: '14.00',Tudor: '9.00-15.00', Elena: 'Ap./Ch.', Marian: 'Ap./Ch.',           Igor: null },
 };
+
+// ── Festività italiane ────────────────────────────────────────────────────────
+function getEaster(year) {
+  // Algoritmo di Gauss
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31); // 1-based
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+function getHolidays(year) {
+  const easter = getEaster(year);
+  const pasquetta = new Date(easter);
+  pasquetta.setDate(pasquetta.getDate() + 1);
+
+  const fixed = [
+    [1, 1],   // Capodanno
+    [1, 6],   // Epifania
+    [4, 25],  // Liberazione
+    [5, 1],   // Festa del Lavoro
+    [6, 2],   // Repubblica
+    [8, 15],  // Ferragosto
+    [11, 1],  // Ognissanti
+    [12, 8],  // Immacolata
+    [12, 25], // Natale
+    [12, 26], // Santo Stefano
+  ];
+
+  const set = new Set();
+  fixed.forEach(([m, d]) => set.add(`${year}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`));
+  set.add(toKey(easter));
+  set.add(toKey(pasquetta));
+  return set;
+}
+
+function getHolidayName(key, year) {
+  const names = {
+    [`${year}-01-01`]: 'Capodanno',
+    [`${year}-01-06`]: 'Epifania',
+    [`${year}-04-25`]: 'Festa della Liberazione',
+    [`${year}-05-01`]: 'Festa del Lavoro',
+    [`${year}-06-02`]: 'Festa della Repubblica',
+    [`${year}-08-15`]: 'Ferragosto',
+    [`${year}-11-01`]: 'Ognissanti',
+    [`${year}-12-08`]: 'Immacolata Concezione',
+    [`${year}-12-25`]: 'Natale',
+    [`${year}-12-26`]: 'Santo Stefano',
+  };
+  const easter = getEaster(year);
+  const pasquetta = new Date(easter); pasquetta.setDate(pasquetta.getDate() + 1);
+  names[toKey(easter)] = 'Pasqua';
+  names[toKey(pasquetta)] = 'Pasquetta';
+  return names[key] || 'Festività';
+}
 
 // ── Logica calendario ─────────────────────────────────────────────────────────
 const DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
@@ -444,6 +527,7 @@ function isToday(date) {
 function render() {
   const year = currentYear;
   const weeks = getWeeksInMonth(year, currentMonth);
+  const holidays = getHolidays(year);
 
   // Clamp index
   if (currentWeekIndex < 0) currentWeekIndex = 0;
@@ -466,9 +550,18 @@ function render() {
   week.forEach((d, i) => {
     const isSun = d.getDay() === 0;
     const isSat = d.getDay() === 6;
+    const isHol = holidays.has(toKey(d));
     const cls = isSun ? 'sunday-col' : '';
-    const style = (isSat || isSun) ? ' style="color:var(--accent)"' : '';
-    html += `<th class="${cls}"${style}>${DAY_NAMES[d.getDay()]}</th>`;
+    const isRed = isSat || isSun || isHol;
+    const isBold = isHol && !isSat && !isSun;
+    const styleStr = [
+      isRed ? 'color:var(--accent)' : '',
+      isBold ? 'font-weight:900' : 'font-weight:400',
+      'position:relative; cursor:' + (isHol ? 'pointer' : 'default')
+    ].filter(Boolean).join(';');
+    const holName = isHol ? getHolidayName(toKey(d), year) : '';
+    const onclick = isHol ? ` onclick="showHoliday(this, '${holName}')"` : '';
+    html += `<th class="${cls}" style="${styleStr}"${onclick}>${DAY_NAMES[d.getDay()]}</th>`;
   });
 
   html += `</tr><tr class="dates-row">
@@ -477,10 +570,12 @@ function render() {
   week.forEach((d, i) => {
     const isSun = d.getDay() === 0;
     const isSat = d.getDay() === 6;
+    const isHol = holidays.has(toKey(d));
     const tod  = isToday(d);
     const cls  = tod ? 'today-col' : (isSun ? 'sunday-col' : '');
-    const style = (isSat || isSun) && !tod ? ' style="color:var(--accent)"' : '';
-    html += `<th class="${cls}"${style}>${d.getDate()}${tod ? ' ●' : ''}</th>`;
+    const isRed = (isSat || isSun || isHol) && !tod;
+    const style = tod ? ' style="color:var(--text)"' : (isRed ? ' style="color:var(--accent)"' : '');
+    html += `<th class="${cls}"${style}>${d.getDate()}</th>`;
   });
 
   html += `</tr></thead><tbody>`;
@@ -538,6 +633,22 @@ function render() {
   wrap.style.animation = 'none';
   void wrap.offsetWidth;
   wrap.style.animation = '';
+}
+
+// ── Holiday popup ─────────────────────────────────────────────────────────────
+let holTimer;
+function showHoliday(el, name) {
+  const popup = document.getElementById('holPopup');
+  popup.textContent = name;
+  popup.classList.add('show');
+
+  const rect = el.getBoundingClientRect();
+  popup.style.left = (rect.left + rect.width / 2) + 'px';
+  popup.style.top = (rect.top + window.scrollY - popup.offsetHeight - 8) + 'px';
+  popup.style.transform = 'translateX(-50%)';
+
+  clearTimeout(holTimer);
+  holTimer = setTimeout(() => popup.classList.remove('show'), 2500);
 }
 
 // ── localStorage helpers ───────────────────────────────────────────────────────
