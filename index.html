@@ -17,9 +17,89 @@
     --sunday: #ff000012;
     --sunday-text: #c00;
     --today-bg: #c0000012;
-    --today-border: #c00;
     --off: #ccc;
     --off-text: #999;
+
+    /* Responsive tokens — overridden by media queries below */
+    --body-pad: 8px;
+    --h1-size: 1.0rem;
+    --ctrl-gap: 6px;
+    --ctrl-mb: 8px;
+    --select-fs: 0.85rem;
+    --select-pad: 5px 26px 5px 8px;
+    --btn-size: 30px;
+    --btn-fs: 0.9rem;
+    --week-label-fs: 0.75rem;
+    --week-label-pad: 0 6px;
+    --th-fs: 0.75rem;
+    --th-pad: 5px 3px 3px;
+    --th-name-w: 70px;
+    --date-fs: 0.72rem;
+    --date-pad: 2px 3px 5px;
+    --td-pad: 3px 2px;
+    --td-name-fs: 0.82rem;
+    --td-name-pl: 6px;
+    --cell-fs-max: 1.8vw;
+    --cell-fs-min: 0.9vw;
+    --cell-lh: 1.35;
+    --dot-size: 5px;
+    --dot-mr: 3px;
+  }
+
+  /* Tablet */
+  @media (min-width: 600px) {
+    :root {
+      --body-pad: 16px;
+      --h1-size: 1.3rem;
+      --ctrl-gap: 10px;
+      --ctrl-mb: 12px;
+      --select-fs: 0.95rem;
+      --select-pad: 7px 32px 7px 12px;
+      --btn-size: 36px;
+      --btn-fs: 1rem;
+      --week-label-fs: 0.85rem;
+      --week-label-pad: 0 10px;
+      --th-fs: 0.85rem;
+      --th-pad: 8px 6px 5px;
+      --th-name-w: 90px;
+      --date-fs: 0.8rem;
+      --date-pad: 3px 6px 8px;
+      --td-pad: 5px 4px;
+      --td-name-fs: 0.9rem;
+      --td-name-pl: 10px;
+      --cell-fs-max: 1.2vw;
+      --cell-fs-min: 0.7vw;
+      --dot-size: 6px;
+      --dot-mr: 4px;
+    }
+  }
+
+  /* Desktop */
+  @media (min-width: 1024px) {
+    :root {
+      --body-pad: 28px 32px;
+      --h1-size: 1.6rem;
+      --ctrl-gap: 14px;
+      --ctrl-mb: 20px;
+      --select-fs: 1rem;
+      --select-pad: 8px 36px 8px 14px;
+      --btn-size: 40px;
+      --btn-fs: 1.1rem;
+      --week-label-fs: 0.9rem;
+      --week-label-pad: 0 12px;
+      --th-fs: 0.9rem;
+      --th-pad: 12px 8px 7px;
+      --th-name-w: 110px;
+      --date-fs: 0.85rem;
+      --date-pad: 5px 8px 12px;
+      --td-pad: 10px 8px;
+      --td-name-fs: 1rem;
+      --td-name-pl: 16px;
+      --cell-fs-max: 0.85rem;
+      --cell-fs-min: 0.4rem;
+      --dot-size: 7px;
+      --dot-mr: 6px;
+    }
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +109,7 @@
     color: var(--text);
     font-family: 'DM Mono', monospace;
     min-height: 100vh;
-    padding: 12px 8px;
+    padding: var(--body-pad);
   }
 
   header {
@@ -42,17 +122,15 @@
   h1 {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: var(--h1-size);
     letter-spacing: -0.03em;
     color: var(--text);
   }
 
-  h1 span {
-    color: var(--accent);
-  }
+  h1 span { color: var(--accent); }
 
   .year-badge {
-    font-size: 0.65rem;
+    font-size: 0.65em;
     color: var(--muted);
     border: 1px solid var(--border);
     padding: 1px 5px;
@@ -62,8 +140,8 @@
   .controls {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
+    gap: var(--ctrl-gap);
+    margin-bottom: var(--ctrl-mb);
     flex-wrap: wrap;
   }
 
@@ -73,8 +151,8 @@
     border: 1px solid var(--border);
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    padding: 6px 28px 6px 10px;
+    font-size: var(--select-fs);
+    padding: var(--select-pad);
     border-radius: 6px;
     cursor: pointer;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -83,25 +161,18 @@
     transition: border-color 0.2s;
   }
 
-  .month-select:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
+  .month-select:focus { outline: none; border-color: var(--accent); }
 
-  .week-nav {
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
+  .week-nav { display: flex; align-items: center; }
 
   .nav-btn {
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 1rem;
-    width: 32px;
-    height: 32px;
+    font-size: var(--btn-fs);
+    width: var(--btn-size);
+    height: var(--btn-size);
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
     display: flex;
@@ -111,21 +182,16 @@
 
   .nav-btn:first-child { border-radius: 6px 0 0 6px; }
   .nav-btn:last-child  { border-radius: 0 6px 6px 0; border-left: none; }
-
-  .nav-btn:hover {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
-  }
+  .nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
   .week-label {
-    font-size: 0.65rem;
+    font-size: var(--week-label-fs);
     color: var(--muted);
-    padding: 0 8px;
+    padding: var(--week-label-pad);
     white-space: nowrap;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    height: 32px;
+    height: var(--btn-size);
     display: flex;
     align-items: center;
   }
@@ -142,20 +208,16 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: unset;
-  }
+  table { width: 100%; border-collapse: collapse; }
 
   thead tr:first-child th {
     font-family: 'Syne', sans-serif;
-    font-size: 0.55rem;
+    font-size: var(--th-fs);
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
-    padding: 6px 4px 4px;
+    padding: var(--th-pad);
     text-align: center;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
@@ -163,14 +225,14 @@
 
   thead tr:first-child th:first-child {
     text-align: left;
-    width: 70px;
-    padding-left: 8px;
+    width: var(--th-name-w);
+    padding-left: var(--td-name-pl);
   }
 
   thead tr.dates-row th {
-    font-size: 0.6rem;
+    font-size: var(--date-fs);
     color: var(--muted);
-    padding: 2px 4px 6px;
+    padding: var(--date-pad);
     text-align: center;
     background: var(--surface);
     border-bottom: 2px solid var(--border);
@@ -178,30 +240,18 @@
 
   thead tr.dates-row th:first-child {
     text-align: left;
-    padding-left: 8px;
+    padding-left: var(--td-name-pl);
   }
 
-  thead tr.dates-row th.today-col {
-    color: var(--accent);
-    font-weight: 500;
-  }
+  thead tr.dates-row th.today-col { color: var(--accent); font-weight: 500; }
+  thead tr.dates-row th.sunday-col { color: var(--sunday-text); }
 
-  thead tr.dates-row th.sunday-col {
-    color: var(--sunday-text);
-  }
-
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.1s;
-  }
-
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
   tbody tr:last-child { border-bottom: none; }
-
   tbody tr:hover { background: #00000008; }
 
   tbody td {
-    padding: 4px 3px;
-    font-size: 0.65rem;
+    padding: var(--td-pad);
     text-align: center;
     vertical-align: middle;
   }
@@ -210,8 +260,8 @@
     text-align: left;
     font-weight: 500;
     color: var(--accent2);
-    font-size: 0.72rem;
-    padding-left: 8px;
+    font-size: var(--td-name-fs);
+    padding-left: var(--td-name-pl);
     white-space: nowrap;
   }
 
@@ -219,53 +269,37 @@
   .sunday-col { background: var(--sunday); }
 
   .dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    background: var(--accent); display: inline-block; margin-right: 4px;
+    width: var(--dot-size); height: var(--dot-size);
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+    margin-right: var(--dot-mr);
   }
 
   .cell-input {
     width: 100%;
-    min-width: 0;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 3px;
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 0.46rem;
-    padding: 3px 2px;
+    font-size: var(--cell-fs-max);
+    padding: 2px 1px;
     text-align: center;
     transition: border-color 0.15s, background 0.15s;
     outline: none;
     resize: none;
     overflow: hidden;
     height: auto;
-    min-height: 2.6em;
-    line-height: 1.4;
+    line-height: var(--cell-lh);
     display: block;
     overflow-wrap: anywhere;
-    word-break: keep-all;
   }
 
-  .cell-input:hover {
-    border-color: var(--border);
-    background: #00000008;
-  }
-
-  .cell-input:focus {
-    border-color: var(--accent);
-    background: #c0000010;
-    color: var(--accent);
-  }
-
-  .cell-input.has-value {
-    color: #111;
-    font-weight: 500;
-  }
-
-  .cell-input.is-off {
-    color: var(--off-text);
-    font-size: 0.6rem;
-  }
+  .cell-input:hover { border-color: var(--border); background: #00000008; }
+  .cell-input:focus { border-color: var(--accent); background: #c0000010; color: var(--accent); }
+  .cell-input.has-value { color: #111; font-weight: 500; }
+  .cell-input.is-off { color: var(--off-text); }
 
   .save-notice {
     font-size: 0.6rem;
@@ -498,15 +532,19 @@ function flashSaved() {
 
 // ── Auto font size fit ────────────────────────────────────────────────────────
 function fitFont(el) {
-  const maxSize = 0.65;
-  const minSize = 0.3;
-  let size = maxSize;
-  el.style.fontSize = size + 'rem';
-  while (el.scrollWidth > el.clientWidth + 2 && size > minSize) {
-    size = Math.round((size - 0.02) * 100) / 100;
-    el.style.fontSize = size + 'rem';
+  // Get max font size from CSS variable (converted to px)
+  const style = getComputedStyle(document.documentElement);
+  const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+  // Reset to max, then shrink until it fits
+  el.style.fontSize = '';
+  let sizePx = parseFloat(getComputedStyle(el).fontSize);
+  const minPx = rootPx * 0.28;
+
+  while (el.scrollWidth > el.clientWidth + 1 && sizePx > minPx) {
+    sizePx -= 0.5;
+    el.style.fontSize = sizePx + 'px';
   }
-  // recalculate height after font change
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
 }
