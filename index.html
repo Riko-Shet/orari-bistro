@@ -29,20 +29,20 @@
     color: var(--text);
     font-family: 'DM Mono', monospace;
     min-height: 100vh;
-    padding: 32px 24px;
+    padding: 12px 8px;
   }
 
   header {
     display: flex;
     align-items: baseline;
-    gap: 16px;
-    margin-bottom: 40px;
+    gap: 8px;
+    margin-bottom: 10px;
   }
 
   h1 {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-size: 1.1rem;
     letter-spacing: -0.03em;
     color: var(--text);
   }
@@ -52,18 +52,18 @@
   }
 
   .year-badge {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: var(--muted);
     border: 1px solid var(--border);
-    padding: 2px 8px;
+    padding: 1px 5px;
     border-radius: 4px;
   }
 
   .controls {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 32px;
+    gap: 6px;
+    margin-bottom: 10px;
     flex-wrap: wrap;
   }
 
@@ -73,13 +73,13 @@
     border: 1px solid var(--border);
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 0.9rem;
-    padding: 10px 40px 10px 16px;
+    font-size: 0.8rem;
+    padding: 6px 28px 6px 10px;
     border-radius: 6px;
     cursor: pointer;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 14px center;
+    background-position: right 10px center;
     transition: border-color 0.2s;
   }
 
@@ -99,9 +99,9 @@
     border: 1px solid var(--border);
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 1.1rem;
-    width: 40px;
-    height: 40px;
+    font-size: 1rem;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
     display: flex;
@@ -119,13 +119,13 @@
   }
 
   .week-label {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: var(--muted);
-    padding: 0 12px;
+    padding: 0 8px;
     white-space: nowrap;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    height: 40px;
+    height: 32px;
     display: flex;
     align-items: center;
   }
@@ -133,7 +133,7 @@
   .table-wrap {
     overflow-x: auto;
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 8px;
     animation: fadeIn 0.2s ease;
   }
 
@@ -145,17 +145,17 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 640px;
+    min-width: unset;
   }
 
   thead tr:first-child th {
     font-family: 'Syne', sans-serif;
-    font-size: 0.65rem;
+    font-size: 0.55rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
-    padding: 16px 14px 8px;
+    padding: 6px 4px 4px;
     text-align: center;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
@@ -163,13 +163,14 @@
 
   thead tr:first-child th:first-child {
     text-align: left;
-    width: 100px;
+    width: 70px;
+    padding-left: 8px;
   }
 
   thead tr.dates-row th {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: var(--muted);
-    padding: 6px 14px 14px;
+    padding: 2px 4px 6px;
     text-align: center;
     background: var(--surface);
     border-bottom: 2px solid var(--border);
@@ -177,6 +178,7 @@
 
   thead tr.dates-row th:first-child {
     text-align: left;
+    padding-left: 8px;
   }
 
   thead tr.dates-row th.today-col {
@@ -195,11 +197,11 @@
 
   tbody tr:last-child { border-bottom: none; }
 
-  tbody tr:hover { background: #ffffff05; }
+  tbody tr:hover { background: #00000008; }
 
   tbody td {
-    padding: 14px 14px;
-    font-size: 0.78rem;
+    padding: 4px 3px;
+    font-size: 0.65rem;
     text-align: center;
     vertical-align: middle;
   }
@@ -208,8 +210,8 @@
     text-align: left;
     font-weight: 500;
     color: var(--accent2);
-    font-size: 0.82rem;
-    padding-left: 20px;
+    font-size: 0.72rem;
+    padding-left: 8px;
     white-space: nowrap;
   }
 
@@ -217,20 +219,20 @@
   .sunday-col { background: var(--sunday); }
 
   .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent); display: inline-block; margin-right: 6px;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); display: inline-block; margin-right: 4px;
   }
 
   .cell-input {
     width: 100%;
-    min-width: 90px;
+    min-width: 0;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: 3px;
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    padding: 5px 7px;
+    font-size: 0.65rem;
+    padding: 3px 2px;
     text-align: center;
     transition: border-color 0.15s, background 0.15s;
     outline: none;
@@ -238,7 +240,7 @@
 
   .cell-input:hover {
     border-color: var(--border);
-    background: #ffffff08;
+    background: #00000008;
   }
 
   .cell-input:focus {
@@ -254,11 +256,11 @@
 
   .cell-input.is-off {
     color: var(--off-text);
-    font-size: 0.7rem;
+    font-size: 0.6rem;
   }
 
   .save-notice {
-    font-size: 0.68rem;
+    font-size: 0.6rem;
     color: var(--muted);
     margin-left: auto;
     opacity: 0;
