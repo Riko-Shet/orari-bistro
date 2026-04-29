@@ -231,17 +231,19 @@
     border-radius: 3px;
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.46rem;
     padding: 3px 2px;
     text-align: center;
     transition: border-color 0.15s, background 0.15s;
     outline: none;
     resize: none;
     overflow: hidden;
-    height: 2.6em;
-    line-height: 1.3;
+    height: auto;
+    min-height: 2.6em;
+    line-height: 1.4;
     display: block;
-    word-break: break-all;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
   }
 
   .cell-input:hover {
@@ -431,11 +433,12 @@ function render() {
       const hardcoded = dayData ? dayData[person] : undefined;
       const raw = stored !== null ? stored : (hardcoded !== undefined ? hardcoded : '');
       const displayVal = (raw === '#' || raw === null) ? '' : (raw || '');
+      const displayFormatted = displayVal.replace(/\//g, '/\n');
       const inputCls = displayVal ? 'has-value' : 'is-off';
       html += `<td class="${colCls}">
         <textarea class="cell-input ${inputCls}"
           data-key="${key}" data-person="${person}"
-          placeholder="—">${displayVal.replace(/"/g,'&quot;')}</textarea>
+          placeholder="—">${displayFormatted.replace(/"/g,'&quot;')}</textarea>
       </td>`;
     });
     html += `</tr>`;
@@ -446,10 +449,15 @@ function render() {
 
   // Attach input events
   wrap.querySelectorAll('.cell-input').forEach(inp => {
+    inp.style.height = 'auto';
+    inp.style.height = inp.scrollHeight + 'px';
     inp.addEventListener('input', function() {
-      saveCell(this.dataset.key, this.dataset.person, this.value);
-      this.classList.toggle('has-value', this.value.length > 0);
-      this.classList.toggle('is-off', this.value.length === 0);
+      const cleanVal = this.value.replace(/\n/g, '');
+      saveCell(this.dataset.key, this.dataset.person, cleanVal);
+      this.classList.toggle('has-value', cleanVal.length > 0);
+      this.classList.toggle('is-off', cleanVal.length === 0);
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
       flashSaved();
     });
   });
