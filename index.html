@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orari di Lavoro 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e8e8e8;
+    --surface: #d8d8d8;
+    --border: #bbb;
+    --accent: #c00;
+    --accent2: #c00;
+    --text: #111;
+    --muted: #777;
+    --sunday: #ff000012;
+    --sunday-text: #c00;
+    --today-bg: #c0000012;
+    --today-border: #c00;
+    --off: #ccc;
+    --off-text: #999;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .year-badge {
+    font-size: 0.75rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .month-select {
+    appearance: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    padding: 10px 40px 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    transition: border-color 0.2s;
+  }
+
+  .month-select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 1.1rem;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-btn:first-child { border-radius: 6px 0 0 6px; }
+  .nav-btn:last-child  { border-radius: 0 6px 6px 0; border-left: none; }
+
+  .nav-btn:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  .week-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    padding: 0 12px;
+    white-space: nowrap;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+  }
+
+  thead tr:first-child th {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 16px 14px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  thead tr:first-child th:first-child {
+    text-align: left;
+    width: 100px;
+  }
+
+  thead tr.dates-row th {
+    font-size: 0.7rem;
+    color: var(--muted);
+    padding: 6px 14px 14px;
+    text-align: center;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+  }
+
+  thead tr.dates-row th:first-child {
+    text-align: left;
+  }
+
+  thead tr.dates-row th.today-col {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  thead tr.dates-row th.sunday-col {
+    color: var(--sunday-text);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr:hover { background: #ffffff05; }
+
+  tbody td {
+    padding: 14px 14px;
+    font-size: 0.78rem;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  tbody td:first-child {
+    text-align: left;
+    font-weight: 500;
+    color: var(--accent2);
+    font-size: 0.82rem;
+    padding-left: 20px;
+    white-space: nowrap;
+  }
+
+  .today-col { background: var(--today-bg); }
+  .sunday-col { background: var(--sunday); }
+
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); display: inline-block; margin-right: 6px;
+  }
+
+  .cell-input {
+    width: 100%;
+    min-width: 90px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    padding: 5px 7px;
+    text-align: center;
+    transition: border-color 0.15s, background 0.15s;
+    outline: none;
+  }
+
+  .cell-input:hover {
+    border-color: var(--border);
+    background: #ffffff08;
+  }
+
+  .cell-input:focus {
+    border-color: var(--accent);
+    background: #c0000010;
+    color: var(--accent);
+  }
+
+  .cell-input.has-value {
+    color: #111;
+    font-weight: 500;
+  }
+
+  .cell-input.is-off {
+    color: var(--off-text);
+    font-size: 0.7rem;
+  }
+
+  .save-notice {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .save-notice.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Orari <span>Bistro 1473</span></h1>
+  <span class="year-badge">2026</span>
+</header>
+
+<div class="controls">
+  <select class="month-select" id="monthSelect">
+    <option value="0">Gennaio</option>
+    <option value="1">Febbraio</option>
+    <option value="2">Marzo</option>
+    <option value="3" selected>Aprile</option>
+    <option value="4">Maggio</option>
+    <option value="5">Giugno</option>
+    <option value="6">Luglio</option>
+    <option value="7">Agosto</option>
+    <option value="8">Settembre</option>
+    <option value="9">Ottobre</option>
+    <option value="10">Novembre</option>
+    <option value="11">Dicembre</option>
+  </select>
+
+  <div class="week-nav">
+    <button class="nav-btn" id="prevWeek">&#8592;</button>
+    <span class="week-label" id="weekLabel">settimana —</span>
+    <button class="nav-btn" id="nextWeek">&#8594;</button>
+  </div>
+  <span class="save-notice" id="saveNotice">✓ salvato</span>
+</div>
+
+<div class="table-wrap" id="tableWrap"></div>
+
+<script>
+// ── Dati originali dal file xlsx ──────────────────────────────────────────────
+const PEOPLE = ['Manu', 'Tudor', 'Elena', 'Marian', 'Igor'];
+
+// Struttura dati: { "YYYY-MM-DD": { nome: turno } }
+// Inserisci qui tutti i turni. Aggiungi righe per ogni giorno che vuoi popolare.
+const DATA = {
+  // --- APRILE 2026 ---
+  // settimana 27 apr – 3 mag (week 1 di aprile nel file)
+  "2026-04-27": { Manu: null,   Tudor: null,         Elena: null,       Marian: null,               Igor: null },
+  "2026-04-28": { Manu: null,   Tudor: null,         Elena: null,       Marian: null,               Igor: null },
+  "2026-04-29": { Manu: '#',    Tudor: '#',          Elena: '#',        Marian: '#',                Igor: '#'  },
+  "2026-04-30": { Manu: '14.00',Tudor: '13.00-23.00',Elena: 'Ap.-14.00',Marian: 'Ap.-14.00/19.00-Ch.',Igor: '#'  },
+  "2026-05-01": { Manu: '14.00',Tudor: '13.00-23.00',Elena: 'Ap.-14.00',Marian: 'Ap./Ch.',          Igor: null },
+  "2026-05-02": { Manu: '13.00-Ch.',Tudor:'13.00-23.00',Elena:'Ap./Ch.',Marian: 'Ap./Ch.',           Igor: null },
+  "2026-05-03": { Manu: '14.00',Tudor: '9.00-15.00', Elena: 'Ap./Ch.', Marian: 'Ap./Ch.',           Igor: null },
+};
+
+// ── Logica calendario ─────────────────────────────────────────────────────────
+const DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+const MONTH_NAMES = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                     'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+let currentMonth = 3; // Aprile (0-indexed)
+let currentWeekIndex = 0;
+
+function getWeeksInMonth(year, month) {
+  // Trova tutte le settimane (Lun–Dom) che toccano questo mese
+  const firstDay = new Date(year, month, 1);
+  const lastDay  = new Date(year, month + 1, 0);
+
+  // Vai al lunedì precedente o uguale al primo del mese
+  let monday = new Date(firstDay);
+  const dow = monday.getDay(); // 0=Dom
+  const diff = dow === 0 ? -6 : 1 - dow;
+  monday.setDate(monday.getDate() + diff);
+
+  const weeks = [];
+  while (monday <= lastDay) {
+    const week = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      week.push(d);
+    }
+    weeks.push(week);
+    monday.setDate(monday.getDate() + 7);
+  }
+  return weeks;
+}
+
+function toKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function fmt(date) {
+  return `${date.getDate()} ${MONTH_NAMES[date.getMonth()].slice(0,3)}`;
+}
+
+function isToday(date) {
+  const t = new Date();
+  return date.getDate() === t.getDate() &&
+         date.getMonth() === t.getMonth() &&
+         date.getFullYear() === t.getFullYear();
+}
+
+function render() {
+  const year = 2026;
+  const weeks = getWeeksInMonth(year, currentMonth);
+
+  // Clamp index
+  if (currentWeekIndex < 0) currentWeekIndex = 0;
+  if (currentWeekIndex >= weeks.length) currentWeekIndex = weeks.length - 1;
+
+  const week = weeks[currentWeekIndex];
+
+  // Update label
+  document.getElementById('weekLabel').textContent =
+    `${fmt(week[0])} – ${fmt(week[6])}`;
+
+  // Build table
+  const wrap = document.getElementById('tableWrap');
+
+  let html = `<table>
+    <thead>
+      <tr>
+        <th>Persona</th>`;
+
+  week.forEach((d, i) => {
+    const isSun = d.getDay() === 0;
+    const cls = isSun ? 'sunday-col' : '';
+    html += `<th class="${cls}">${DAY_NAMES[d.getDay()]}</th>`;
+  });
+
+  html += `</tr><tr class="dates-row">
+        <th></th>`;
+
+  week.forEach((d, i) => {
+    const isSun = d.getDay() === 0;
+    const tod  = isToday(d);
+    const cls  = tod ? 'today-col' : (isSun ? 'sunday-col' : '');
+    html += `<th class="${cls}">${d.getDate()}${tod ? ' ●' : ''}</th>`;
+  });
+
+
+
+  html += `</tr></thead><tbody>`;
+
+  PEOPLE.forEach(person => {
+    html += `<tr><td><span class="dot"></span>${person}</td>`;
+    week.forEach(d => {
+      const key = toKey(d);
+      const isSun = d.getDay() === 0;
+      const tod  = isToday(d);
+      const colCls = tod ? 'today-col' : (isSun ? 'sunday-col' : '');
+      const stored = loadCell(key, person);
+      const dayData = DATA[key];
+      const hardcoded = dayData ? dayData[person] : undefined;
+      const raw = stored !== null ? stored : (hardcoded !== undefined ? hardcoded : '');
+      const displayVal = (raw === '#' || raw === null) ? '' : (raw || '');
+      const inputCls = displayVal ? 'has-value' : 'is-off';
+      html += `<td class="${colCls}">
+        <input type="text" class="cell-input ${inputCls}"
+          data-key="${key}" data-person="${person}"
+          value="${displayVal.replace(/"/g,'&quot;')}" placeholder="—">
+      </td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+
+  // Attach input events
+  wrap.querySelectorAll('.cell-input').forEach(inp => {
+    inp.addEventListener('input', function() {
+      saveCell(this.dataset.key, this.dataset.person, this.value);
+      this.classList.toggle('has-value', this.value.length > 0);
+      this.classList.toggle('is-off', this.value.length === 0);
+      flashSaved();
+    });
+  });
+
+  wrap.style.animation = 'none';
+  void wrap.offsetWidth;
+  wrap.style.animation = '';
+}
+
+// ── localStorage helpers ───────────────────────────────────────────────────────
+const LS_KEY = 'orari2026';
+
+function getStore() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveCell(dateKey, person, val) {
+  const store = getStore();
+  if (!store[dateKey]) store[dateKey] = {};
+  store[dateKey][person] = val;
+  localStorage.setItem(LS_KEY, JSON.stringify(store));
+}
+
+function loadCell(dateKey, person) {
+  const store = getStore();
+  if (store[dateKey] && store[dateKey][person] !== undefined) {
+    return store[dateKey][person];
+  }
+  return null;
+}
+
+let saveTimer;
+function flashSaved() {
+  const el = document.getElementById('saveNotice');
+  el.classList.add('show');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => el.classList.remove('show'), 1500);
+}
+
+// ── Event listeners ───────────────────────────────────────────────────────────
+document.getElementById('monthSelect').addEventListener('change', function() {
+  currentMonth = parseInt(this.value);
+  currentWeekIndex = 0;
+  render();
+});
+
+document.getElementById('prevWeek').addEventListener('click', () => {
+  const weeks = getWeeksInMonth(2026, currentMonth);
+  if (currentWeekIndex > 0) {
+    currentWeekIndex--;
+  } else {
+    // vai al mese precedente
+    if (currentMonth > 0) {
+      currentMonth--;
+      document.getElementById('monthSelect').value = currentMonth;
+      currentWeekIndex = getWeeksInMonth(2026, currentMonth).length - 1;
+    }
+  }
+  render();
+});
+
+document.getElementById('nextWeek').addEventListener('click', () => {
+  const weeks = getWeeksInMonth(2026, currentMonth);
+  if (currentWeekIndex < weeks.length - 1) {
+    currentWeekIndex++;
+  } else {
+    // vai al mese successivo
+    if (currentMonth < 11) {
+      currentMonth++;
+      document.getElementById('monthSelect').value = currentMonth;
+      currentWeekIndex = 0;
+    }
+  }
+  render();
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+// Posiziona sulla settimana corrente se siamo in aprile 2026
+(function() {
+  const today = new Date();
+  if (today.getFullYear() === 2026 && today.getMonth() === currentMonth) {
+    const weeks = getWeeksInMonth(2026, currentMonth);
+    weeks.forEach((w, i) => {
+      if (today >= w[0] && today <= w[6]) currentWeekIndex = i;
+    });
+  }
+})();
+
+render();
+</script>
+</body>
+</html>
